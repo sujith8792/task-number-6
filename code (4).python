@@ -1,0 +1,52 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+
+# Step 1: Load the dataset
+data = pd.read_csv("heart_disease_dataset.csv")  # Ensure this file is in the same directory
+
+# Step 2: Preprocess the dataset
+# Assuming the dataset has a 'target' column indicating the presence of heart disease
+X = data.drop('target', axis=1)  # Features
+y = data['target']  # Target variable
+
+# Step 3: Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Train a Decision Tree Classifier
+dt_classifier = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt_classifier.fit(X_train, y_train)
+
+# Step 5: Visualize the Decision Tree
+plt.figure(figsize=(12,8))
+plot_tree(dt_classifier, filled=True, feature_names=X.columns, class_names=['No Disease', 'Disease'])
+plt.title("Decision Tree Visualization")
+plt.savefig("decision_tree.png")  # Save the visualization
+plt.show()
+
+# Step 6: Train a Random Forest Classifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(X_train, y_train)
+
+# Step 7: Compare accuracy
+dt_accuracy = dt_classifier.score(X_test, y_test)
+rf_accuracy = rf_classifier.score(X_test, y_test)
+
+print(f"Decision Tree Accuracy: {dt_accuracy:.2f}")
+print(f"Random Forest Accuracy: {rf_accuracy:.2f}")
+
+# Step 8: Evaluate using cross-validation
+dt_cv_scores = cross_val_score(dt_classifier, X, y, cv=5)
+rf_cv_scores = cross_val_score(rf_classifier, X, y, cv=5)
+
+print(f"Decision Tree CV Accuracy: {dt_cv_scores.mean():.2f}")
+print(f"Random Forest CV Accuracy: {rf_cv_scores.mean():.2f}")
+
+# Step 9: Interpret feature importances
+importances = rf_classifier.feature_importances_
+feature_importances = pd.DataFrame(importances, index=X.columns, columns=["Importance"]).sort_values("Importance", ascending=False)
+print("Feature Importances:")
+print(feature_importances)
